@@ -559,17 +559,29 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
 
 
   // Inventory Form Component
-  const InventoryForm = () => {
+  const InventoryForm = ({
+    inventory = [],
+    inventoryFormData,
+    inventoryTenantId,
+    tenants,
+    formError,
+    handleInventoryInputChange,
+    setInventoryTenantId,
+    onSubmit,
+    formLoading,
+    setIsAddInventoryModalOpen,
+    resetInventoryForm
+  }) => {
     const DynamicInputField = ({ label, name, value, options, placeholder }) => {
-      const [isCreatingNew, setIsCreatingNew] = useState(false);
+      const [isCreatingNew, setIsCreatingNew] = useState(false)
 
       const handleSelectChange = (e) => {
         if (e.target.value === '__NEW__') {
-          setIsCreatingNew(true);
+          setIsCreatingNew(true)
         } else {
-          handleInventoryInputChange(e);
+          handleInventoryInputChange(e)
         }
-      };
+      }
 
       return (
         <div className="space-y-2">
@@ -620,7 +632,7 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
     const uniquePositions = [...new Set(inventory.map(i => i.position))].filter(Boolean);
 
     return (
-      <form onSubmit={handleAddInventory} className="p-8 space-y-8">
+      <form onSubmit={onSubmit} className="p-8 space-y-8">
         {formError && (
           <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100 animate-in fade-in slide-in-from-top-2">
             {formError}
@@ -1192,6 +1204,9 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
           handleInventoryInputChange={handleInventoryInputChange}
           setInventoryTenantId={setInventoryTenantId}
           onSubmit={handleAddInventory}
+          formLoading={formLoading}
+          setIsAddInventoryModalOpen={setIsAddInventoryModalOpen}
+          resetInventoryForm={resetInventoryForm}
         />
       </Modal>
 
