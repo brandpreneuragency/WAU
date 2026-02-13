@@ -129,6 +129,8 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
   const [isAddInventoryModalOpen, setIsAddInventoryModalOpen] = useState(false)
   const [isCsvUploadModalOpen, setIsCsvUploadModalOpen] = useState(false)
   const [inventoryTenantId, setInventoryTenantId] = useState('')
+  // Inventory data (used for option lists in the inventory form)
+  const [inventory, setInventory] = useState([])
 
   // Form states
   const [tenantFormData, setTenantFormData] = useState({
