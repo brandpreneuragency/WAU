@@ -1,9 +1,9 @@
 name: Build and deploy (GitHub Pages)
 
+# Disabled automatic push trigger because this workflow uses a deprecated/blocked action.
+# Use `gh-pages-deploy.yml` (peaceiris) or re-enable manually after upgrading actions.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: {}
 
 permissions:
   contents: read
