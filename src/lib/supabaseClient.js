@@ -30,10 +30,10 @@ let cachedUser = null
 /**
  * Helper to get current user with tenant info
  * Uses caching to avoid redundant network requests during the same session
- * Includes a mandatory 5-second timeout to prevent UI hangs.
+ * Includes a timeout guard with a retry and a cached fallback to avoid UI hangs.
  */
 export async function getCurrentUser(forceRefresh = false) {
-  const fetchWithTimeout = async () => {
+  const fetchWithTimeout = async (attempt = 1) => {
     try {
       console.log('getCurrentUser: Checking session...')
       // If not forcing refresh and we have a cached version, return it
@@ -87,18 +87,36 @@ export async function getCurrentUser(forceRefresh = false) {
       return { user, profile, error: null }
     } catch (err) {
       console.error('getCurrentUser: Internal error:', err)
+      // If first attempt failed, retry once before giving up
+      if (attempt === 1) {
+        console.warn('getCurrentUser: retrying after error...')
+        return fetchWithTimeout(2)
+      }
       return { user: null, profile: null, error: err }
     }
   }
 
-  // Mandatory 5-second timeout wrapper
-  return Promise.race([
+  // Timeout wrapper with fallback to cached data instead of hard failure
+  const timeoutMs = 12000
+  const timedFetch = Promise.race([
     fetchWithTimeout(),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Profile fetch timed out. Check your database connection and RLS rules.')), 5000)
+    new Promise((resolve) =>
+      setTimeout(() => {
+        console.warn('getCurrentUser: Timeout hit, returning cached user/profile if available')
+        if (cachedUser && cachedProfile) {
+          resolve({ user: cachedUser, profile: cachedProfile, error: new Error('Profile fetch timed out (using cache)') })
+        } else {
+          resolve({ user: null, profile: null, error: new Error('Profile fetch timed out.') })
+        }
+      }, timeoutMs)
     )
-  ]).catch(err => {
+  ])
+
+  return timedFetch.catch(err => {
     console.error('getCurrentUser: Hang detected and aborted:', err)
+    if (cachedUser && cachedProfile) {
+      return { user: cachedUser, profile: cachedProfile, error: err }
+    }
     return { user: null, profile: null, error: err }
   })
 }
