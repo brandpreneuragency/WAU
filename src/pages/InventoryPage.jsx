@@ -1138,6 +1138,7 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
             resetForm={resetForm}
             formLoading={formLoading}
             formError={formError}
+            inventory={inventory}
           />
         </Modal>
 
@@ -1161,6 +1162,7 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
             resetForm={resetForm}
             formLoading={formLoading}
             formError={formError}
+            inventory={inventory}
           />
         </Modal>
 
