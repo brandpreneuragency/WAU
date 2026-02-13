@@ -1,12 +1,12 @@
-name: Build and deploy (GitHub Pages)
+name: Build and deploy (GitHub Pages) — upgraded
 
-# Disabled automatic push trigger because this workflow uses a deprecated/blocked action.
-# Use `gh-pages-deploy.yml` (peaceiris) or re-enable manually after upgrading actions.
 on:
-  workflow_dispatch: {}
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -32,18 +32,9 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
 
-  deploy:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
