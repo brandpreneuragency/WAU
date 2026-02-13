@@ -50,24 +50,24 @@ export default function StatWidget({
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-soft-md p-6 hover:shadow-soft-lg transition-all duration-200">
+    <div className="bg-white rounded-3xl shadow-soft-md p-4 md:p-6 hover:shadow-soft-lg transition-all duration-200">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+          <p className="text-[10px] md:text-sm font-medium text-gray-500 mb-1">{title}</p>
           <div className="flex items-baseline gap-2">
-            <h4 className="text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+            <h4 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
               {value}
             </h4>
             {renderTrend()}
           </div>
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-2">{subtitle}</p>
+            <p className="text-[10px] md:text-sm text-gray-500 mt-2">{subtitle}</p>
           )}
         </div>
         
         {Icon && (
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${colorClasses[color]}`}>
-            <Icon className="w-6 h-6" />
+          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${colorClasses[color]}`}>
+            <Icon className="w-5 h-5 md:w-6 md:h-6" />
           </div>
         )}
       </div>

@@ -944,41 +944,41 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card padding="normal">
+      <div className="grid grid-cols-3 gap-3 md:gap-4 mb-8">
+        <Card padding="small">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Tenants</p>
-              <p className="text-2xl font-bold text-gray-900">{tenants.length}</p>
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">Total Tenants</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">{tenants.length}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <Building2 className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
           </div>
         </Card>
 
-        <Card padding="normal">
+        <Card padding="small">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Active Tenants</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">Active Tenants</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600">
                 {tenants.filter(t => t.is_active !== false).length}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-green-50 flex items-center justify-center">
+              <Building2 className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
             </div>
           </div>
         </Card>
 
-        <Card padding="normal">
+        <Card padding="small">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Inventory</p>
-              <p className="text-2xl font-bold text-gray-900">-</p>
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">Total Inventory</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">-</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center">
-              <Package className="w-6 h-6 text-purple-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-purple-50 flex items-center justify-center">
+              <Package className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
             </div>
           </div>
         </Card>
@@ -1183,7 +1183,16 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
         }}
         title="Add Inventory Item"
       >
-        <InventoryForm />
+        <InventoryForm
+          inventory={inventory}
+          inventoryFormData={inventoryFormData}
+          inventoryTenantId={inventoryTenantId}
+          tenants={tenants}
+          formError={formError}
+          handleInventoryInputChange={handleInventoryInputChange}
+          setInventoryTenantId={setInventoryTenantId}
+          onSubmit={handleAddInventory}
+        />
       </Modal>
 
       {/* CSV Upload Modal */}

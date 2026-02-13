@@ -121,6 +121,298 @@ const ProductCard = ({
   </div>
 )
 
+// Dynamic select/create input extracted to keep focus stable during typing
+const DynamicInputField = React.memo(function DynamicInputField({ label, name, value, options, placeholder, onChange }) {
+  const [isCreatingNew, setIsCreatingNew] = useState(false)
+
+  const handleSelectChange = (e) => {
+    if (e.target.value === '__NEW__') {
+      setIsCreatingNew(true)
+    } else {
+      onChange(e)
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest">{label}</label>
+      {!isCreatingNew ? (
+        <div className="space-y-2">
+          <select
+            name={name}
+            value={value}
+            onChange={handleSelectChange}
+            className="input-soft w-full font-bold appearance-none bg-white border-2 border-transparent"
+          >
+            <option value="">-- Select {label} --</option>
+            {options.filter(opt => opt && opt !== 'all').map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+            <option value="__NEW__" className="text-indigo-600 font-black">+ Create new {label}</option>
+          </select>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="relative">
+            <input
+              type="text"
+              name={name}
+              value={value}
+              onChange={onChange}
+              className="input-soft w-full font-bold bg-white pr-20"
+              placeholder={placeholder}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => setIsCreatingNew(false)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+})
+
+// Item Form Component hoisted to avoid remounting (keeps focus while typing)
+function ItemForm({
+  onSubmit,
+  submitLabel,
+  formData,
+  handleInputChange,
+  setIsAddModalOpen,
+  setIsEditModalOpen,
+  resetForm,
+  formLoading,
+  formError,
+  inventory
+}) {
+  const uniqueCategories = [...new Set(inventory.map(i => i.category))].filter(Boolean)
+  const uniqueDepartments = [...new Set(inventory.map(i => i.department))].filter(Boolean)
+  const uniquePositions = [...new Set(inventory.map(i => i.position))].filter(Boolean)
+
+  return (
+    <form onSubmit={onSubmit} className="p-8 space-y-8 max-h-[80vh] overflow-y-auto">
+      {formError && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100 animate-in fade-in slide-in-from-top-2">
+          {formError}
+        </div>
+      )}
+
+      {/* Section 1: Basic Info */}
+      <div className="grid grid-cols-1 gap-6">
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Item Name</label>
+          <input
+            type="text"
+            name="item_name"
+            value={formData.item_name}
+            onChange={handleInputChange}
+            className="input-soft w-full text-base font-bold text-gray-900"
+            placeholder="e.g., Chef Jacket"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="h-px bg-gray-100 w-full" />
+
+      {/* Section 2: Classification */}
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">SKU</label>
+          <input
+            type="text"
+            name="sku"
+            value={formData.sku || ''}
+            onChange={handleInputChange}
+            className="input-soft w-full text-sm font-bold"
+            placeholder="e.g., KITCH-101"
+          />
+        </div>
+        <DynamicInputField
+          label="Category"
+          name="category"
+          value={formData.category}
+          options={uniqueCategories}
+          placeholder="New Category..."
+          onChange={handleInputChange}
+        />
+        <DynamicInputField
+          label="Department"
+          name="department"
+          value={formData.department}
+          options={uniqueDepartments}
+          placeholder="New Department..."
+          onChange={handleInputChange}
+        />
+        <DynamicInputField
+          label="Position"
+          name="position"
+          value={formData.position}
+          options={uniquePositions}
+          placeholder="New Position..."
+          onChange={handleInputChange}
+        />
+      </div>
+
+      <div className="h-px bg-gray-100 w-full" />
+
+      {/* Section 3: Fabric & Care */}
+      <div className="space-y-6">
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Fabric Content</label>
+          <input
+            type="text"
+            name="fabric"
+            value={formData.fabric || ''}
+            onChange={handleInputChange}
+            className="input-soft w-full text-sm font-medium"
+            placeholder="e.g., 65% Polyester, 35% Cotton"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Care Instructions</label>
+          <textarea
+            name="care"
+            value={formData.care || ''}
+            onChange={handleInputChange}
+            className="input-soft w-full text-sm font-medium min-h-[100px] py-4"
+            placeholder="e.g., Machine wash warm, tumble dry low..."
+          />
+        </div>
+      </div>
+
+      <div className="h-px bg-gray-100 w-full" />
+
+      {/* Section 4: Physical Specifications & Measurements */}
+      <div className="space-y-6">
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Physical Specifications</label>
+          <div className="mb-6">
+            <label className="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tag Size</label>
+            <input
+              type="text"
+              name="size"
+              value={formData.size}
+              onChange={handleInputChange}
+              className="input-soft w-full text-base font-black border-2 border-gray-50"
+              placeholder="e.g., Medium (M)"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-[1fr,100px,100px] gap-4 items-center mb-4 px-2">
+            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Measurement</span>
+            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest text-center">CM</span>
+            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Inches</span>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { label: 'Chest', base: 'chest' },
+              { label: 'Shoulder', base: 'shoulder' },
+              { label: 'Waist', base: 'waist' },
+              { label: 'Hip', base: 'hip' },
+              { label: 'Height', base: 'height' }
+            ].map(f => (
+              <div key={f.base} className="grid grid-cols-[1fr,100px,100px] gap-4 items-center">
+                <label className="text-xs font-bold text-gray-500">{f.label}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  name={`${f.base}_cm`}
+                  value={formData[`${f.base}_cm`]}
+                  onChange={handleInputChange}
+                  className="input-soft w-full text-sm text-center bg-gray-50 shadow-none border-transparent focus:bg-white focus:border-indigo-100"
+                  placeholder="0.0"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  name={`${f.base}_in`}
+                  value={formData[`${f.base}_in`]}
+                  onChange={handleInputChange}
+                  className="input-soft w-full text-sm text-center bg-amber-50/30 shadow-none border-transparent focus:bg-white focus:border-amber-100"
+                  placeholder="0.0"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-gray-100 w-full" />
+
+      {/* Section 5: Media & Pricing */}
+      <div className="space-y-6">
+        <div>
+          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Product Image URL</label>
+          <input
+            type="text"
+            name="image_url"
+            value={formData.image_url || ''}
+            onChange={handleInputChange}
+            className="input-soft w-full text-sm"
+            placeholder="https://images.unsplash.com/photo..."
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Unit Price ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              name="unit_price"
+              value={formData.unit_price}
+              onChange={handleInputChange}
+              className="input-soft w-full text-base font-bold text-blue-600 border-2 border-blue-50"
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Quantity</label>
+            <input
+              type="number"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleInputChange}
+              className="input-soft w-full text-base font-bold"
+              min="0"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4 pt-6 sticky bottom-0 bg-white/90 backdrop-blur-md pb-2 -mx-2 px-2">
+        <button
+          type="button"
+          onClick={() => {
+            setIsAddModalOpen(false)
+            setIsEditModalOpen(false)
+            resetForm()
+          }}
+          className="flex-1 px-6 py-4 rounded-2xl border border-gray-100 text-gray-500 font-bold hover:bg-gray-50 transition-all uppercase tracking-widest text-[10px]"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={formLoading}
+          className="flex-1 px-6 py-4 rounded-2xl bg-gray-900 text-white font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 uppercase tracking-widest text-[10px] disabled:opacity-50"
+        >
+          {formLoading ? 'Processing...' : submitLabel}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 // Item Form Component
 export default function InventoryPage({ currentPath, onNavigate, onLogout, profile, overrideTenantId }) {
   const [inventory, setInventory] = useState([])
@@ -169,283 +461,6 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
   })
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
-
-  // Item Form Component
-  const ItemForm = ({ onSubmit, submitLabel }) => {
-    const DynamicInputField = ({ label, name, value, options, placeholder }) => {
-      const [isCreatingNew, setIsCreatingNew] = useState(false);
-
-      const handleSelectChange = (e) => {
-        if (e.target.value === '__NEW__') {
-          setIsCreatingNew(true);
-        } else {
-          handleInputChange(e);
-        }
-      };
-
-      return (
-        <div className="space-y-2">
-          <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest">{label}</label>
-          {!isCreatingNew ? (
-            <div className="space-y-2">
-              <select
-                name={name}
-                value={value}
-                onChange={handleSelectChange}
-                className="input-soft w-full font-bold appearance-none bg-white border-2 border-transparent"
-              >
-                <option value="">-- Select {label} --</option>
-                {options.filter(opt => opt && opt !== 'all').map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-                <option value="__NEW__" className="text-indigo-600 font-black">+ Create new {label}</option>
-              </select>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  name={name}
-                  value={value}
-                  onChange={handleInputChange}
-                  className="input-soft w-full font-bold bg-white pr-20"
-                  placeholder={placeholder}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingNew(false)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    const uniqueCategories = [...new Set(inventory.map(i => i.category))].filter(Boolean);
-    const uniqueDepartments = [...new Set(inventory.map(i => i.department))].filter(Boolean);
-    const uniquePositions = [...new Set(inventory.map(i => i.position))].filter(Boolean);
-
-    return (
-      <form onSubmit={onSubmit} className="p-8 space-y-8 max-h-[80vh] overflow-y-auto">
-        {formError && (
-          <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100 animate-in fade-in slide-in-from-top-2">
-            {formError}
-          </div>
-        )}
-
-        {/* Section 1: Basic Info */}
-        <div className="grid grid-cols-1 gap-6">
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Item Name</label>
-            <input
-              type="text"
-              name="item_name"
-              value={formData.item_name}
-              onChange={handleInputChange}
-              className="input-soft w-full text-base font-bold text-gray-900"
-              placeholder="e.g., Chef Jacket"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="h-px bg-gray-100 w-full" />
-
-        {/* Section 2: Classification */}
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">SKU</label>
-            <input
-              type="text"
-              name="sku"
-              value={formData.sku || ''}
-              onChange={handleInputChange}
-              className="input-soft w-full text-sm font-bold"
-              placeholder="e.g., KITCH-101"
-            />
-          </div>
-          <DynamicInputField
-            label="Category"
-            name="category"
-            value={formData.category}
-            options={uniqueCategories}
-            placeholder="New Category..."
-          />
-          <DynamicInputField
-            label="Department"
-            name="department"
-            value={formData.department}
-            options={uniqueDepartments}
-            placeholder="New Department..."
-          />
-          <DynamicInputField
-            label="Position"
-            name="position"
-            value={formData.position}
-            options={uniquePositions}
-            placeholder="New Position..."
-          />
-        </div>
-
-        <div className="h-px bg-gray-100 w-full" />
-
-        {/* Section 3: Fabric & Care */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Fabric Content</label>
-            <input
-              type="text"
-              name="fabric"
-              value={formData.fabric || ''}
-              onChange={handleInputChange}
-              className="input-soft w-full text-sm font-medium"
-              placeholder="e.g., 65% Polyester, 35% Cotton"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Care Instructions</label>
-            <textarea
-              name="care"
-              value={formData.care || ''}
-              onChange={handleInputChange}
-              className="input-soft w-full text-sm font-medium min-h-[100px] py-4"
-              placeholder="e.g., Machine wash warm, tumble dry low..."
-            />
-          </div>
-        </div>
-
-        <div className="h-px bg-gray-100 w-full" />
-
-        {/* Section 4: Physical Specifications & Measurements */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Physical Specifications</label>
-            <div className="mb-6">
-              <label className="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-tighter">Tag Size</label>
-              <input
-                type="text"
-                name="size"
-                value={formData.size}
-                onChange={handleInputChange}
-                className="input-soft w-full text-base font-black border-2 border-gray-50"
-                placeholder="e.g., Medium (M)"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-[1fr,100px,100px] gap-4 items-center mb-4 px-2">
-              <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Measurement</span>
-              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest text-center">CM</span>
-              <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Inches</span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { label: 'Chest', base: 'chest' },
-                { label: 'Shoulder', base: 'shoulder' },
-                { label: 'Waist', base: 'waist' },
-                { label: 'Hip', base: 'hip' },
-                { label: 'Height', base: 'height' }
-              ].map(f => (
-                <div key={f.base} className="grid grid-cols-[1fr,100px,100px] gap-4 items-center">
-                  <label className="text-xs font-bold text-gray-500">{f.label}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name={`${f.base}_cm`}
-                    value={formData[`${f.base}_cm`]}
-                    onChange={handleInputChange}
-                    className="input-soft w-full text-sm text-center bg-gray-50 shadow-none border-transparent focus:bg-white focus:border-indigo-100"
-                    placeholder="0.0"
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    name={`${f.base}_in`}
-                    value={formData[`${f.base}_in`]}
-                    onChange={handleInputChange}
-                    className="input-soft w-full text-sm text-center bg-amber-50/30 shadow-none border-transparent focus:bg-white focus:border-amber-100"
-                    placeholder="0.0"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="h-px bg-gray-100 w-full" />
-
-        {/* Section 5: Media & Pricing */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Product Image URL</label>
-            <input
-              type="text"
-              name="image_url"
-              value={formData.image_url || ''}
-              onChange={handleInputChange}
-              className="input-soft w-full text-sm"
-              placeholder="https://images.unsplash.com/photo..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Unit Price ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                name="unit_price"
-                value={formData.unit_price}
-                onChange={handleInputChange}
-                className="input-soft w-full text-base font-bold text-blue-600 border-2 border-blue-50"
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Quantity</label>
-              <input
-                type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleInputChange}
-                className="input-soft w-full text-base font-bold"
-                min="0"
-                required
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-4 pt-6 sticky bottom-0 bg-white/90 backdrop-blur-md pb-2 -mx-2 px-2">
-          <button
-            type="button"
-            onClick={() => {
-              setIsAddModalOpen(false)
-              setIsEditModalOpen(false)
-              resetForm()
-            }}
-            className="flex-1 px-6 py-4 rounded-2xl border border-gray-100 text-gray-500 font-bold hover:bg-gray-50 transition-all uppercase tracking-widest text-[10px]"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={formLoading}
-            className="flex-1 px-6 py-4 rounded-2xl bg-gray-900 text-white font-bold hover:bg-black transition-all shadow-lg shadow-gray-200 uppercase tracking-widest text-[10px] disabled:opacity-50"
-          >
-            {formLoading ? 'Processing...' : submitLabel}
-          </button>
-        </div>
-      </form>
-    );
-  };
 
   // Get real data from Supabase
   useEffect(() => {
@@ -791,10 +806,10 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 md:grid-cols-3 gap-3 mb-6">
-        <Card padding="small">
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <Card padding="small" ghost>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gray-100 flex-shrink-0 flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex-shrink-0 flex items-center justify-center">
               <Package className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
             </div>
             <div className="flex-1">
@@ -804,9 +819,9 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
           </div>
         </Card>
 
-        <Card padding="small">
+        <Card padding="small" ghost>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-yellow-50 flex-shrink-0 flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex-shrink-0 flex items-center justify-center">
               <Package className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
             </div>
             <div className="flex-1">
@@ -816,9 +831,9 @@ export default function InventoryPage({ currentPath, onNavigate, onLogout, profi
           </div>
         </Card>
 
-        <Card padding="small">
+        <Card padding="small" ghost>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-red-50 flex-shrink-0 flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex-shrink-0 flex items-center justify-center">
               <Package className="w-5 h-5 md:w-6 md:h-6 text-red-600" />
             </div>
             <div className="flex-1">

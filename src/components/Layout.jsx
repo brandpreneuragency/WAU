@@ -136,7 +136,16 @@ export default function Layout({ children, currentPath = '/', onNavigate, onLogo
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white pt-16">
+        <div className="lg:hidden fixed inset-0 z-50 bg-white">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900">Menu</h3>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 hover:text-gray-900"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
           <nav className="p-4 space-y-2">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon

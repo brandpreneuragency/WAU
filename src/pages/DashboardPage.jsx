@@ -117,7 +117,7 @@ export default function DashboardPage({ currentPath, onNavigate, onLogout, profi
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-3 gap-6 mb-8">
         <StatWidget
           title="Total Staff"
           value={stats.totalStaff}
@@ -137,12 +137,6 @@ export default function DashboardPage({ currentPath, onNavigate, onLogout, profi
           icon={ShoppingCart}
           color="yellow"
           trend={{ value: 2, direction: 'up' }}
-        />
-        <StatWidget
-          title="Low Stock Alerts"
-          value={stats.lowStockItems.length}
-          icon={AlertTriangle}
-          color="red"
         />
       </div>
 

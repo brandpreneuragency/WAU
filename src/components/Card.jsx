@@ -10,7 +10,8 @@ export default function Card({
   className = '',
   padding = 'normal', // 'none' | 'small' | 'normal' | 'large'
   shadow = 'normal', // 'none' | 'small' | 'normal' | 'large'
-  hover = false
+  hover = false,
+  ghost = false // render without background/shadow for minimalist layouts
 }) {
   // Padding variants
   const paddingClasses = {
@@ -22,18 +23,18 @@ export default function Card({
 
   // Shadow variants
   const shadowClasses = {
-    none: '',
+    none: 'shadow-none',
     small: 'shadow-soft',
     normal: 'shadow-soft-md',
     large: 'shadow-soft-lg'
   }
 
   const baseClasses = [
-    'bg-white',
+    ghost ? 'bg-transparent' : 'bg-white',
     'rounded-3xl',
     paddingClasses[padding],
-    shadowClasses[shadow],
-    hover && 'transition-all duration-200 hover:shadow-soft-lg',
+    ghost ? 'shadow-none' : shadowClasses[shadow],
+    hover && !ghost && 'transition-all duration-200 hover:shadow-soft-lg',
     className
   ].filter(Boolean).join(' ')
 

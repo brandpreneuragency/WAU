@@ -171,3 +171,37 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 6. Organization Structure (Department → Position hierarchy)
+CREATE TABLE IF NOT EXISTS public.org_structure (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  department TEXT NOT NULL,
+  position TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE (tenant_id, department, COALESCE(position, ''))
+);
+
+ALTER TABLE public.org_structure ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Super admins can manage all org_structure" ON public.org_structure;
+DROP POLICY IF EXISTS "Tenant admins can manage their own org_structure" ON public.org_structure;
+
+CREATE POLICY "Super admins can manage all org_structure"
+  ON public.org_structure FOR ALL
+  USING (public.get_auth_role() = 'super_admin');
+
+CREATE POLICY "Tenant admins can manage their own org_structure"
+  ON public.org_structure FOR ALL
+  USING (tenant_id = public.get_auth_tenant_id());
+
+-- Seed org_structure from existing staff/inventory data (safe to re-run)
+INSERT INTO public.org_structure (tenant_id, department, position)
+SELECT DISTINCT tenant_id, department, position
+FROM (
+  SELECT tenant_id, department, position FROM public.staff WHERE department IS NOT NULL
+  UNION
+  SELECT tenant_id, department, position FROM public.inventory WHERE department IS NOT NULL
+) AS existing_categories
+ON CONFLICT (tenant_id, department, COALESCE(position, '')) DO NOTHING;
+

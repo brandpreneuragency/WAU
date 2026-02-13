@@ -11,7 +11,8 @@ export default function Modal({
   title, 
   children, 
   maxWidth = 'md',
-  showCloseButton = true 
+  showCloseButton = true,
+  hasHeader = true
 }) {
   if (!isOpen) return null
 
@@ -37,7 +38,7 @@ export default function Modal({
     >
       <div className={`bg-white rounded-3xl shadow-soft-lg w-full ${maxWidthClasses[maxWidth]} max-h-[90vh] overflow-hidden`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className={`flex items-center justify-between px-6 py-4 border-b border-gray-100 ${hasHeader ? '' : 'hidden'}`}>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           {showCloseButton && (
             <button 
@@ -48,7 +49,7 @@ export default function Modal({
             </button>
           )}
         </div>
-        
+
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
           {children}

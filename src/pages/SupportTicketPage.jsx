@@ -252,15 +252,15 @@ export default function SupportTicketPage({ currentPath, onNavigate, onLogout, p
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         <Card padding="normal">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Total Tickets</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">Open</p>
+              <p className="text-lg md:text-2xl font-bold text-yellow-600">{stats.open}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <MessageSquare className="w-6 h-6 text-gray-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-yellow-50 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-yellow-600" />
             </div>
           </div>
         </Card>
@@ -268,23 +268,11 @@ export default function SupportTicketPage({ currentPath, onNavigate, onLogout, p
         <Card padding="normal">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Open</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.open}</p>
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">In Progress</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-600">{stats.inProgress}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-yellow-50 flex items-center justify-center">
-              <AlertCircle className="w-6 h-6 text-yellow-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card padding="normal">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">In Progress</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.inProgress}</p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
-              <Clock className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <Clock className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
           </div>
         </Card>
@@ -292,11 +280,11 @@ export default function SupportTicketPage({ currentPath, onNavigate, onLogout, p
         <Card padding="normal">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Resolved</p>
-              <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
+              <p className="text-[10px] md:text-sm text-gray-500 mb-1">Resolved</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600">{stats.resolved}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-green-50 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
             </div>
           </div>
         </Card>

@@ -106,7 +106,7 @@ const StaffForm = ({ onSubmit, submitLabel, formData, handleInputChange, formErr
 
   return (
     <>
-      <form onSubmit={onSubmit} className="p-8 space-y-8">
+      <form onSubmit={onSubmit} className="p-0 space-y-8">
       {formError && (
         <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm border border-red-100 animate-in fade-in slide-in-from-top-2">
           {formError}
@@ -128,7 +128,7 @@ const StaffForm = ({ onSubmit, submitLabel, formData, handleInputChange, formErr
           />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <DynamicInputField
             label="Department"
             name="department"
@@ -389,6 +389,16 @@ export default function AssignmentsPage({ currentPath, onNavigate, onLogout, pro
     setIsAddModalOpen(true)
   }
 
+  const handleOpenAddAssignmentModal = (staffMember) => {
+    setAssignmentForm({
+      staff_id: staffMember.id,
+      inventory_id: '',
+      quantity: 1
+    })
+    setFormError('')
+    setIsAddModalOpen(true)
+  }
+
   const handleAssignmentInputChange = (e) => {
     const { name, value } = e.target
     setAssignmentForm(prev => ({
@@ -627,7 +637,7 @@ export default function AssignmentsPage({ currentPath, onNavigate, onLogout, pro
               onClick={() => setIsManageModalOpen(true)}
               className="inline-flex items-center gap-2 bg-white text-gray-700 px-3 py-2 rounded-2xl text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
             >
-              Manage values
+              Edit Categories
             </button>
             <button
               onClick={handleOpenStaffModal}
@@ -709,6 +719,16 @@ export default function AssignmentsPage({ currentPath, onNavigate, onLogout, pro
                           <ChevronUp className="w-4 h-4 text-gray-400" />
                         )}
                       </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenAddAssignmentModal(staff);
+                      }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors ml-2"
+                      title="Add Assignment"
+                    >
+                      <Plus className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleOpenEditStaffModal(staff)}
@@ -958,14 +978,94 @@ export default function AssignmentsPage({ currentPath, onNavigate, onLogout, pro
         </div>
       </Modal>
 
+      {/* Add Assignment Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title=""
+        maxWidth="md"
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Add Assignment</h2>
+            <button
+              onClick={() => setIsAddModalOpen(false)}
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleAddAssignment} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Staff Member</label>
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 font-medium text-gray-900">
+                {staff.find(s => s.id === assignmentForm.staff_id)?.full_name}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Item</label>
+              <select
+                name="inventory_id"
+                value={assignmentForm.inventory_id}
+                onChange={handleAssignmentInputChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all font-medium"
+                required
+              >
+                <option value="">-- Choose an item --</option>
+                {inventory.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.item_name} (Size: {item.size}) - {item.quantity} in stock
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+              <input
+                type="number"
+                name="quantity"
+                min="1"
+                value={assignmentForm.quantity}
+                onChange={handleAssignmentInputChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all"
+                required
+              />
+            </div>
+
+            {formError && (
+              <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm">
+                {formError}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-6">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="flex-1 px-6 py-4 rounded-2xl border border-gray-100 text-gray-500 font-bold hover:bg-gray-50 transition-all uppercase tracking-widest text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={formLoading}
+                className="flex-1 px-6 py-4 rounded-2xl bg-gray-900 text-white font-bold hover:bg-gray-800 transition-all uppercase tracking-widest text-xs"
+              >
+                {formLoading ? 'Assigning...' : 'Add Assignment'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
       <ManageValueModal
         isOpen={isManageModalOpen}
         onClose={() => setIsManageModalOpen(false)}
-        staff={staff}
-        inventory={inventory}
         tenantId={tenantId}
         onComplete={() => {
-          setIsManageModalOpen(false)
           fetchData()
         }}
       />
