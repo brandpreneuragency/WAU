@@ -574,6 +574,9 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
     setIsAddInventoryModalOpen,
     resetInventoryForm
   }) => {
+    const safeInventory = Array.isArray(inventory) ? inventory : []
+    const safeTenants = Array.isArray(tenants) ? tenants : []
+
     const DynamicInputField = ({ label, name, value, options, placeholder }) => {
       const [isCreatingNew, setIsCreatingNew] = useState(false)
 
@@ -629,9 +632,9 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
       );
     };
 
-    const uniqueCategories = [...new Set(inventory.map(i => i.category))].filter(Boolean);
-    const uniqueDepartments = [...new Set(inventory.map(i => i.department))].filter(Boolean);
-    const uniquePositions = [...new Set(inventory.map(i => i.position))].filter(Boolean);
+    const uniqueCategories = [...new Set(safeInventory.map(i => i?.category))].filter(Boolean)
+    const uniqueDepartments = [...new Set(safeInventory.map(i => i?.department))].filter(Boolean)
+    const uniquePositions = [...new Set(safeInventory.map(i => i?.position))].filter(Boolean)
 
     return (
       <form onSubmit={onSubmit} className="p-8 space-y-8">
@@ -664,7 +667,7 @@ export default function SuperAdminDashboard({ currentPath, onNavigate, onLogout,
               required
             >
               <option value="">-- Select Tenant --</option>
-              {tenants.map(tenant => (
+              {safeTenants.map(tenant => (
                 <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
               ))}
             </select>
